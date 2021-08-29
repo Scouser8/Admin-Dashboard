@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Grid,
   IconButton,
   LinearProgress,
   makeStyles,
@@ -15,11 +16,19 @@ import {
   MenuItem,
   Paper,
   Select,
+  TextField,
   Typography,
 } from "@material-ui/core";
 import { DataGrid, GridOverlay } from "@mui/x-data-grid";
 import { Pagination } from "@material-ui/lab";
-import { Delete, Edit, ExpandMore, MoreVert } from "@material-ui/icons";
+import {
+  Add,
+  Delete,
+  Edit,
+  ExpandMore,
+  MoreVert,
+  Search,
+} from "@material-ui/icons";
 import axios from "../axios";
 import UserForm from "./UserForm";
 import Popup from "./Popup";
@@ -29,24 +38,24 @@ const useStyles = makeStyles((theme) => ({
     padding: "50px 30px",
     color: "#424242",
   },
+  searchContainer: {
+    marginLeft: 10,
+    marginBottom: 20,
+  },
   grid: {
     "& .super-app-theme--header": {
       backgroundColor: "#f5f6fa",
       color: "#7d8288",
     },
   },
-  button: {
+  newBtn: {
     height: 40,
-    fontFamily: `"Almarai", sans-serif`,
-    color: "#EF9300",
-    background: "#ffffff",
-    border: "1px solid #EF9300",
-    borderRadius: 0,
+    color: "#ffffff",
+    background: "#01ab55",
     "&:hover": {
-      background: "#EF9300",
+      background: "#01ab55",
       color: "#ffffff",
     },
-    marginRight: "5px",
   },
 }));
 
@@ -73,8 +82,10 @@ export default function Dashboard() {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState("");
   const [sortModel, setSortModel] = useState([
-    { field: "first_name", sort: "asc" },
+    { field: "createdAt", sort: "asc" },
   ]);
+  const [searchValue, setSearchValue] = useState();
+  const [userIsSearching, setuserIsSearching] = useState(false);
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const actionsMenu = Boolean(anchorEl);
@@ -95,6 +106,7 @@ export default function Dashboard() {
       width: 100,
       // renderCell: (params) =>
       //   `${params.row.first_name} ${params.row.last_name}`,
+      sortable: false,
     },
     {
       field: "first_name",
@@ -106,15 +118,16 @@ export default function Dashboard() {
     { field: "email", headerName: "Email", width: 200, flex: 1 },
     { field: "status", headerName: "Status", width: 100 },
     {
-      field: "dateCreated",
+      field: "createdAt",
       headerName: "Date created",
       width: 200,
+      // sortable: false,
       renderCell: (params) => params.value.replace("T", " ").slice(0, 19),
     },
     {
       field: "actions",
       headerName: "Actions",
-      width: 250,
+      width: 100,
       sortable: false,
       disableClickEventBubbling: true,
       renderCell: (params) => {
@@ -179,6 +192,19 @@ export default function Dashboard() {
     },
   ];
 
+  const handleSearchInput = (e) => {
+    let search = e.target.value;
+    if (!search || search.trim() === "") {
+      setuserIsSearching(false);
+      setSearchValue("");
+    } else {
+      if (!userIsSearching) {
+        setuserIsSearching(true);
+      }
+      setSearchValue(search);
+    }
+  };
+
   const handlePageSize = ({ pageSize }) => {
     setPageSize(pageSize);
   };
@@ -232,21 +258,41 @@ export default function Dashboard() {
   useEffect(() => {
     if (openPopup) return;
     setLoading(true);
-    axios
-      .get(
-        `/users?pageNumber=${page - 1}&recordsPerPage=${pageSize}&orderBy=${
-          sortModel[0]?.field
-        }&order=${sortModel[0]?.sort}`
-      )
-      .then(({ data }) => {
-        setRowsCount(data.totalCount);
-        setRows(data.data.map((user, index) => ({ id: index + 1, ...user })));
-        setLoading(false);
-      })
-      .catch(() => {
-        alert("Failed to Fetch data");
-      });
-  }, [page, openPopup, sortModel, pageSize]);
+
+    if (!userIsSearching) {
+      axios
+        .get(
+          `/users?pageNumber=${page - 1}&recordsPerPage=${pageSize}&orderBy=${
+            sortModel[0]?.field
+          }&order=${sortModel[0]?.sort}`
+        )
+        .then(({ data }) => {
+          setRowsCount(data.totalCount);
+          setRows(data.data.map((user, index) => ({ id: index + 1, ...user })));
+          setLoading(false);
+        })
+        .catch(() => {
+          alert("Failed to Fetch data");
+        });
+    } else {
+      axios
+        .get(
+          `/users/filter?pageNumber=${
+            page - 1
+          }&recordsPerPage=${pageSize}&orderBy=${sortModel[0]?.field}&order=${
+            sortModel[0]?.sort
+          }&searchValue=${searchValue}`
+        )
+        .then(({ data }) => {
+          setRowsCount(data.totalCount);
+          setRows(data.data.map((user, index) => ({ id: index + 1, ...user })));
+          setLoading(false);
+        })
+        .catch(() => {
+          alert("Failed to Fetch data");
+        });
+    }
+  }, [page, searchValue, openPopup, sortModel, pageSize]);
 
   return (
     <div className={classes.root}>
@@ -254,18 +300,51 @@ export default function Dashboard() {
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          <h1>Users List</h1>
-          <Breadcrumbs aria-label="breadcrumb">
-            <Typography color="textPrimary">Dashboard</Typography>
-            <Typography color="textPrimary">User</Typography>
-            <Typography color="textPrimary">List</Typography>
-          </Breadcrumbs>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              flexDirection: "column",
+            }}
+          >
+            <h1>Users List</h1>
+            <Breadcrumbs aria-label="breadcrumb">
+              <Typography color="textPrimary">Dashboard</Typography>
+              <Typography color="textPrimary">User</Typography>
+              <Typography color="textPrimary">List</Typography>
+            </Breadcrumbs>
+          </div>
+
+          <Button
+            startIcon={<Add />}
+            className={classes.newBtn}
+            onClick={() => {
+              setOpenPopup(true);
+              setSelectedItem("");
+            }}
+          >
+            New User
+          </Button>
         </div>
         <Paper style={{ marginTop: 20 }}>
+          <div className={classes.searchContainer}>
+            <Grid container spacing={1} alignItems="flex-end">
+              <Grid item>
+                <Search />
+              </Grid>
+              <Grid item>
+                <TextField
+                  id="input-with-icon-grid"
+                  label="Search"
+                  onChange={handleSearchInput}
+                />
+              </Grid>
+            </Grid>
+          </div>
           <div style={{ width: "100%" }} className={classes.grid}>
             <DataGrid
               rows={rows}

@@ -3,20 +3,22 @@ import {
   Button,
   FormControl,
   Grid,
+  IconButton,
+  InputAdornment,
   makeStyles,
   TextField,
 } from "@material-ui/core";
 import * as Yup from "yup";
 import { Formik } from "formik";
 import axios from "../axios";
-import { RotateLeft } from "@material-ui/icons";
+import { RotateLeft, Visibility, VisibilityOff } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    width: "35vw",
+    width: "40vw",
   },
   form: {
     width: "100%", // Fix IE 11 issue.
@@ -61,32 +63,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const validationSchema = Yup.object().shape({
-  first_name: Yup.string().required("Required Field"),
-  last_name: Yup.string().required("Required Field"),
-  email: Yup.string()
-    .email("Please enter a valid Email")
-    .max(255)
-    .required("Required Field"),
-  //   password: Yup.string()
-  //     .matches(
-  //       /^(?!.* )(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!/@_#\$%\^&\*])/,
-  //       "Must have no Spaces, contain 8 Characters, One Uppercase, One Lowercase, One Number & One Special Character"
-  //     )
-  //     .min(8, "Password minimum length is 8 characters")
-  //     .max(255)
-  //     .required("Required Field"),
-  //   password_confirmation: Yup.string().when("password", {
-  //     is: (val) => (val && val.length > 0 ? true : false),
-  //     then: Yup.string()
-  //       .oneOf(
-  //         [Yup.ref("password")],
-  //         "Please match with the password entered above"
-  //       )
-  //       .required("Required Field"),
-  //   }),
-});
-
 function UserForm({ setPage, setOpenPopup, itemToEdit }) {
   const classes = useStyles();
 
@@ -98,6 +74,46 @@ function UserForm({ setPage, setOpenPopup, itemToEdit }) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [responseErrors, setResponseErrors] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleMouseDownPassword = (e) => {
+    e.preventDefault();
+  };
+
+  const validationSchema = Yup.object().shape({
+    first_name: Yup.string().required("Required Field"),
+    last_name: Yup.string().required("Required Field"),
+    email: Yup.string()
+      .email("Please enter a valid Email")
+      .max(255)
+      .required("Required Field"),
+    password: !itemToEdit
+      ? Yup.string()
+          .matches(
+            /^(?!.* )(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!/@_#\$%\^&\*])/,
+            "Must have no Spaces, contain 8 Characters, One Uppercase, One Lowercase, One Number & One Special Character"
+          )
+          .min(8, "Password minimum length is 8 characters")
+          .max(255)
+          .required("Required Field")
+      : Yup.string().notRequired().nullable(),
+    // password_confirmation: !itemToEdit
+    //   ? Yup.string().when("password", {
+    //       is: (val) => (val && val.length > 0 ? true : false),
+    //       then: Yup.string()
+    //         .oneOf(
+    //           [Yup.ref("password")],
+    //           "Please match with the password entered above"
+    //         )
+    //         .required("Required Field"),
+    //     })
+    //   : Yup.string().notRequired().nullable(),
+  });
 
   const handleSubmit = () => {
     setIsSubmitting(true);
@@ -114,9 +130,8 @@ function UserForm({ setPage, setOpenPopup, itemToEdit }) {
         });
     } else {
       axios
-        .post("/users", formData)
+        .post("/users/add", formData)
         .then((res) => {
-          setPage(1);
           setOpenPopup(false);
         })
         .catch(({ response }) => {
@@ -137,7 +152,10 @@ function UserForm({ setPage, setOpenPopup, itemToEdit }) {
 
   const handleReset = () => {
     updateFormData({
-      name: "",
+      email: "",
+      password: "",
+      first_name: "",
+      last_name: "",
     });
     setResponseErrors("");
   };
@@ -184,31 +202,46 @@ function UserForm({ setPage, setOpenPopup, itemToEdit }) {
                 />
               </Grid>
 
-              {/* <Grid item xs={12}>
-                <TextField
-                  type="password"
-                  name="password"
-                  required
-                  fullWidth
-                  label="Password"
-                  value={formData.password}
-                  autoFocus
-                  onChange={(e) => {
-                    handleChange(e);
-                    handleStateChange(e);
-                  }}
-                  onBlur={handleBlur}
-                  error={
-                    responseErrors?.password ||
-                    Boolean(touched.password && errors.password) ||
-                    responseErrors.password
-                  }
-                  helperText={
-                    (touched.password && errors.password) ||
-                    responseErrors.password
-                  }
-                />
-              </Grid> */}
+              {!itemToEdit ? (
+                <Grid item xs={12}>
+                  <TextField
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    required
+                    fullWidth
+                    label="Password"
+                    value={formData.password}
+                    autoComplete="new-password"
+                    onChange={(e) => {
+                      handleChange(e);
+                      handleStateChange(e);
+                    }}
+                    onBlur={handleBlur}
+                    error={
+                      responseErrors?.password ||
+                      Boolean(touched.password && errors.password) ||
+                      responseErrors.password
+                    }
+                    helperText={
+                      (touched.password && errors.password) ||
+                      responseErrors.password
+                    }
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            onMouseDown={handleMouseDownPassword}
+                          >
+                            {showPassword ? <Visibility /> : <VisibilityOff />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+              ) : null}
 
               <Grid item xs={6}>
                 <TextField
@@ -217,7 +250,6 @@ function UserForm({ setPage, setOpenPopup, itemToEdit }) {
                   fullWidth
                   label="First Name"
                   value={formData.first_name}
-                  autoFocus
                   onChange={(e) => {
                     handleChange(e);
                     handleStateChange(e);
@@ -242,7 +274,6 @@ function UserForm({ setPage, setOpenPopup, itemToEdit }) {
                   fullWidth
                   label="Last Name"
                   value={formData.last_name}
-                  autoFocus
                   onChange={(e) => {
                     handleChange(e);
                     handleStateChange(e);

@@ -11,7 +11,7 @@ function App() {
 
   return (
     <div className="App">
-      {user ? (
+      {!user ? (
         <Switch>
           <Route exact path="/" component={Login} />
           <Route exact path="*">
