@@ -6,7 +6,7 @@ import {
   Switch,
 } from "@material-ui/core";
 import axios from "../axios";
-import { UserLogin } from "../actions";
+import { UpdateUser, UserLogin } from "../actions";
 import { useDispatch, useSelector } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
@@ -55,7 +55,7 @@ export default function ImageAndActivitySection() {
     axios
       .put(`/users/${user._id}`, { status: newStatus })
       .then((res) => {
-        dispatch(UserLogin({ ...user, status: newStatus }));
+        dispatch(UpdateUser({ ...user, status: newStatus }));
         alert("Admin status updated successfully");
       })
       .catch(({ response }) => {

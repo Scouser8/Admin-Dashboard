@@ -12,7 +12,7 @@ import * as Yup from "yup";
 import { Formik } from "formik";
 import axios from "../axios";
 import { RotateLeft, Visibility, VisibilityOff } from "@material-ui/icons";
-import { UserLogin } from "../actions";
+import { UpdateUser, UserLogin } from "../actions";
 import { useDispatch } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
@@ -85,7 +85,7 @@ function UserInfoForm({ user }) {
     axios
       .put(`/users/${user._id}`, formData)
       .then((res) => {
-        dispatch(UserLogin({ ...user, ...formData }));
+        dispatch(UpdateUser({ ...user, ...formData }));
         alert("Admin info updated successfully");
         setIsSubmitting(false);
       })

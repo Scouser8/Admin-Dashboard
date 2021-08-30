@@ -8,6 +8,9 @@ const userInfoReducer = (
     case "LOGIN":
       return action.payload.user;
 
+    case "UPDATE_USER":
+      return action.payload;
+
     case "LOGOUT":
       return null;
 

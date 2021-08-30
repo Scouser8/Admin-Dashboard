@@ -5,6 +5,13 @@ export const UserLogin = (user, token) => {
   };
 };
 
+export const UpdateUser = (user) => {
+  return {
+    type: "UPDATE_USER",
+    payload: user,
+  };
+};
+
 export const Logout = () => {
   return {
     type: "LOGOUT",
