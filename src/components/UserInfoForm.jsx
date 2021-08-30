@@ -59,7 +59,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function UserInfoForm({ setPage, setOpenPopup, user }) {
+function UserInfoForm({ user }) {
   const classes = useStyles();
   const dispatch = useDispatch();
   const formRef = useRef();

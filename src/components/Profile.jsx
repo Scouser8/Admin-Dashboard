@@ -16,6 +16,7 @@ import { AccountBox, VpnKey } from "@material-ui/icons";
 import UserInfoForm from "./UserInfoForm";
 import ChangePassword from "./ChangePassword";
 import { useSelector } from "react-redux";
+import ImageAndActivitySection from "./ImageAndActivitySection";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -49,30 +50,14 @@ const useStyles = makeStyles((theme) => ({
   content: {
     marginTop: "20px",
   },
-  userImgContainer: {
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    padding: "10px",
-    border: "1px dotted grey",
-  },
-  userImgHelper: {
-    fontSize: "1rem",
-    color: "grey",
-  },
 }));
 
 export default function Profile() {
   const classes = useStyles();
+  //Used this better than fetching user data, although the API exists but it would be a hassle to request it
+  // everytime you make a change, instead on success you can update the global redux state using actions
   const { user } = useSelector((state) => state);
   const [activeTab, setActiveTab] = useState("general");
-  const [adminActivated, setAdminActivated] = useState(false);
 
   return (
     <div className={classes.root}>
@@ -119,28 +104,7 @@ export default function Profile() {
         <Grid container spacing={4}>
           <Grid item xs={4}>
             <Paper elevation={2} style={{ height: "100%" }}>
-              <div className={classes.userImgContainer}>
-                <Avatar className={classes.avatar} />
-                <p className={classes.userImgHelper}>
-                  Allowed *.jpeg *.jpg *.png *.gif
-                </p>
-
-                <FormControlLabel
-                  value="start"
-                  control={
-                    <Switch
-                      checked={adminActivated}
-                      onChange={() => setAdminActivated(!adminActivated)}
-                      color="primary"
-                      inputProps={{ "aria-label": "primary checkbox" }}
-                    />
-                  }
-                  label={
-                    <span style={{ color: "#424242" }}>Public Profile</span>
-                  }
-                  labelPlacement="start"
-                />
-              </div>
+              <ImageAndActivitySection user={user} />
             </Paper>
           </Grid>
           <Grid item xs={8}>
