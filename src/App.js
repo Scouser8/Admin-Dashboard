@@ -7,14 +7,17 @@ import Profile from "./components/Profile";
 import Error404 from "./components/404";
 import Header from "./components/Header";
 import AboutUs from "./components/AboutUs";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "./axios";
 
 function App() {
+  // This state is added to prevent side effects on hard refreshing as the token in the headers isn't set yet.
+  const [enableRendering, setEnableRendering] = useState(false);
   const { user, userToken } = useSelector((state) => state);
 
   useEffect(() => {
     axios.defaults.headers.common["Authorization"] = `Bearer ${userToken}`;
+    setEnableRendering(true);
   }, []);
 
   return (
@@ -26,7 +29,7 @@ function App() {
             <Redirect to="/" />
           </Route>
         </Switch>
-      ) : (
+      ) : enableRendering ? (
         <>
           <Header />
           <Switch>
@@ -36,7 +39,7 @@ function App() {
             <Route exact path="/*" component={Error404} />
           </Switch>
         </>
-      )}
+      ) : null}
     </div>
   );
 }
