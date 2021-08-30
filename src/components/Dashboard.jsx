@@ -35,7 +35,7 @@ import Popup from "./Popup";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    padding: "50px 30px",
+    padding: "30px 30px",
     color: "#424242",
   },
   searchContainer: {
