@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import * as Yup from "yup";
 import { Formik } from "formik";
 import {
@@ -87,6 +87,9 @@ export default function Login() {
   const classes = useStyles();
   const dispatch = useDispatch();
 
+  // const rememberMe = useRef();
+  const [rememberMe, setRememberMe] = useState(false);
+
   const [formData, updateFormData] = useState({
     email: "",
     password: "",
@@ -109,7 +112,18 @@ export default function Login() {
     axios
       .post("users/login", formData)
       .then(({ data }) => {
-        dispatch(UserLogin(data.data));
+        axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+        dispatch(UserLogin(data.data, data.token));
+        if (rememberMe) {
+          window.localStorage.setItem(
+            "my-task-user",
+            JSON.stringify(data.data)
+          );
+          window.localStorage.setItem(
+            "my-task-token",
+            JSON.stringify(data.token)
+          );
+        }
       })
       .catch(({ response }) => {
         setStatus({ success: false });
@@ -223,7 +237,12 @@ export default function Login() {
                     }}
                   >
                     <FormControlLabel
-                      control={<CustomCheckbox value="remember" />}
+                      control={
+                        <CustomCheckbox
+                          value="remember"
+                          onChange={(e) => setRememberMe(e.target.checked)}
+                        />
+                      }
                       label="Remember me"
                       style={{ userSelect: "none" }}
                     />

@@ -7,9 +7,15 @@ import Profile from "./components/Profile";
 import Error404 from "./components/404";
 import Header from "./components/Header";
 import AboutUs from "./components/AboutUs";
+import { useEffect } from "react";
+import axios from "./axios";
 
 function App() {
-  const { user } = useSelector((state) => state);
+  const { user, userToken } = useSelector((state) => state);
+
+  useEffect(() => {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${userToken}`;
+  }, []);
 
   return (
     <div className="App">

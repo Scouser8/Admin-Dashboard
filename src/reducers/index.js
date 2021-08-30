@@ -1,17 +1,14 @@
 import { combineReducers } from "redux";
 
-const userInfoReducer = (user = null, action) => {
+const userInfoReducer = (
+  user = JSON.parse(window.localStorage.getItem("my-task-user")) || null,
+  action
+) => {
   switch (action.type) {
     case "LOGIN":
-      return action.payload;
+      return action.payload.user;
 
     case "LOGOUT":
-      return null;
-
-    case "TOKEN_AVAILABLE":
-      return action.payload;
-
-    case "TOKEN_EXPIRED":
       return null;
 
     default:
@@ -20,21 +17,18 @@ const userInfoReducer = (user = null, action) => {
 };
 
 const userTokenReducer = (
-  user = JSON.parse(window.localStorage.getItem("trkar-token")) || null,
+  token = JSON.parse(window.localStorage.getItem("my-task-token")) || null,
   action
 ) => {
   switch (action.type) {
     case "LOGIN":
-      return action.payload;
+      return action.payload.token;
 
     case "LOGOUT":
       return null;
 
-    case "TOKEN_EXPIRED":
-      return null;
-
     default:
-      return user;
+      return token;
   }
 };
 
